@@ -1,0 +1,30 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: collaborative-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  api:
+    build: .
+    container_name: collaborative-api
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGO_URI=mongodb://mongo:27017
+      - DATABASE_NAME=collaborative_store
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  mongo_data:
